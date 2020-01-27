@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="cs-cz">
+<head>
+    <meta charset="UTF-8">
+    <title>Hlavní stránka</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=css + '.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='Logo.png') }}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        function firstRun(){
+            $.getJSON('get_time', {
+            }, function(data) {
+                console.log(data.lenght);
+                if (data.length == 1){
+                    document.getElementById("time").style.left = "-50px";
+                }
+                else if (data.length == 2){
+                    document.getElementById("time").style.left = "-70px";
+                }
+                else if (data.length == 7){
+                    document.getElementById("time").style.left = "-200px";
+                }
+                else if (data.length == 5){
+                    document.getElementById("time").style.left = "-140px";
+                }
+                else if (data.length == 4){
+                    document.getElementById("time").style.left = "-110px";
+                }
+                $('#time').text(data.time + "'");
+            });
+            return false;
+        }
+
+        firstRun();
+
+        setInterval(function(){
+            $.getJSON('get_time', {
+            }, function(data) {
+                    if (data.length == 1){
+                        document.getElementById("time").style.left = "-50px";
+                    }
+                    else if (data.length == 2){
+                        document.getElementById("time").style.left = "-70px";
+                    }
+                    else if (data.length == 7){
+                        document.getElementById("time").style.left = "-200px";
+                    }
+                    else if (data.length == 5){
+                        document.getElementById("time").style.left = "-140px";
+                    }
+                    else if (data.length == 4){
+                        document.getElementById("time").style.left = "-110px";
+                    }
+                    $('#time').text(data.time);
+                    document.getElementById("left-name").innerHTML = data.home_team;
+                    document.getElementById("right-name").innerHTML = data.away_team;
+            });
+            return false;
+        }, 7000);
+
+
+        setInterval(function(){
+            $.getJSON('get_score', {
+            }, function(data) {
+                document.getElementById("home-score").innerHTML = data.home;
+                document.getElementById("away-score").innerHTML = data.away;
+
+
+            });
+            return false;
+        }, 7000);
+
+
+        setInterval(function(){
+            var text = document.getElementById("time").textContent;
+
+            if (text.slice(text.length - 1) != "'"){
+                document.getElementById("time").innerHTML = text + "'";
+            }
+            else{
+                document.getElementById("time").innerHTML = text.slice(0, -1);
+            }
+        }, 800);
+
+        setTimeout(location.reload.bind(location), 21000);
+
+
+    </script>
+</head>
+<body>
+    <div id="red">
+        <nav>
+            <h2>Vánoční florbalový turnaj</h2>
+        </nav>
+        {% if timer.polocas != 1 %}
+            <h1 id="h1-white">Právě se hraje</h1>
+            <h3>Skupina {{ match.Home.Group.name }}</h3>
+
+
+            <div id="playing">
+                <div id="playing-score">
+                    <span id="time">0'</span>
+                    <span id="left-name">{{ match.Home.name }}</span>
+                    <div id="playing-result">
+                        <span class="purple" id="home-score">{{ match.score.split(':')[0] }}</span>
+                        <span id="hyphen">-</span>
+                        <span class="purple" id="away-score">{{ match.score.split(':')[1] }}</span>
+                    </div>
+                    <span id="right-name">{{ match.Away.name }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if timer.polocas == 1 %}
+            <h1 id="h1-white">Rozpis</h1>
+        {% else %}
+            <h1 id="h1-white">Následující zápasy</h1>
+        {% endif %}
+
+        {% if matches %}
+            <div class="next">
+                {% set start = [] %}
+                {% for match in matches %}
+                    {% if loop.index == 1 and timer.polocas == 1 %}
+                        <div class="next-score">
+                            <span class="next-time">{{ match.start }}</span>
+                            <span class="next-left-name">{{ match.Home.name }}</span>
+                            <span class="v">v</span>
+                            <span class="next-right-name">{{ match.Away.name }}</span>
+                        </div>
+
+                        <br />
+                    {% elif loop.index != 1 and match.order < 800 %}
+                        <div class="next-score">
+                            <span class="next-time">{{ match.start }}</span>
+                            <span class="next-left-name">{{ match.Home.name }}</span>
+                            <span class="v">v</span>
+                            <span class="next-right-name">{{ match.Away.name }}</span>
+                        </div>
+
+                        <br />
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div id="pavouk">
+        <img src="{{ url_for('static', filename='Pavouk.png') }}" alt="Pavouk">
+
+        {% if quarterfinal != 0 %}
+            {% for match in quarterfinal %}
+                {% if loop.index == 1 %}
+                    <div id="first-qfinal">
+                        <div id="q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="q-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+                        {% if match.score != "0:0" %}
+                            <div id="q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 2 %}
+                    <div id="second-qfinal">
+                        <div id="q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="q-{{loop.index}}-second">
+                            {{ match.Away.name }}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 3 %}
+                    <div id="second-qfinal">
+                        <div id="q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="q-{{loop.index}}-second">
+                            {{ match.Away.name }}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 4 %}
+                    <div id="second-qfinal">
+                        <div id="q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="q-{{loop.index}}-second">
+                            {{ match.Away.name }}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if semifinal != 0 %}
+            {% for match in semifinal %}
+                {% if loop.index == 1 %}
+                    <div id="first-sfinal">
+                        <div id="s-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="s-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="s-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="s-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 2 %}
+                    <div id="second-sfinal">
+                        <div id="s-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="s-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="s-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="s-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if final != 0 %}
+            {% for match in final %}
+                {% if loop.index == 1 %}
+                    <div id="first-final">
+                        <div id="f-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="f-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="f-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="f-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if third != 0 %}
+            {% for match in third %}
+                {% if loop.index == 1 %}
+                    <div id="first-third">
+                        <div id="t-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="t-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="t-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="t-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if l_quarterfinal != 0 %}
+            {% for match in l_quarterfinal %}
+                {% if loop.index == 1 %}
+                    <div id="first-l_qfinal">
+                        <div id="l_q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="l_q-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="l_q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="l_q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 2 %}
+                    <div id="second-l_qfinal">
+                        <div id="l_q-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="l_q-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="l_q-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="l_q-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if l_semifinal != 0 %}
+            {% for match in l_semifinal %}
+                {% if loop.index == 1 %}
+                    <div id="first-l_sfinal">
+                        <div id="l_s-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="l_s-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="l_s-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="l_s-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if loop.index == 2 %}
+                    <div id="second-l_sfinal">
+                        <div id="l_s-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="l_s-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="l_s-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="l_s-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if l_final != 0 %}
+            {% for match in l_final %}
+                {% if loop.index == 1 %}
+                    <div id="first-l_final">
+                        <div id="l_f-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="l_f-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="l_f-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="l_f-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if real_final != 0 %}
+            {% for match in real_final %}
+                {% if loop.index == 1 %}
+                    <div id="first-r_final">
+                        <div id="r_f-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="r_f-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="r_f-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="r_f-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        {% if real_third != 0 %}
+            {% for match in real_third %}
+                {% if loop.index == 1 %}
+                    <div id="first-r_third">
+                        <div id="r_t-{{loop.index}}-first">
+                            {{ match.Home.name }}
+                        </div>
+
+                        <div id="r_t-{{loop.index}}-second">
+                            {% if match.Home.name != match.Away.name %}
+                                {{ match.Away.name }}
+                            {% endif %}
+                        </div>
+
+                        {% if match.score != "0:0" %}
+                            <div id="r_t-score-{{loop.index}}-first">
+                                {{ match.score.split(":")[0] }}
+                            </div>
+                            <div id="r_t-score-{{loop.index}}-second">
+                                {{ match.score.split(":")[1] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>

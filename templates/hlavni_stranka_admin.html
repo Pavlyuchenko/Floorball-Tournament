@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="cs-cz">
+<head>
+    <meta charset="UTF-8">
+    <title>Vánoční Florbalový Turnaj - Admin</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=css + '.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='Logo.png') }}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        //Hide mouse
+        $(document).ready(function() {
+            var idleMouseTimer;
+            var forceMouseHide = false;
+
+            $("body").css('cursor', 'none');
+
+            $("body").mousemove(function(ev) {
+                    if(!forceMouseHide) {
+                            $("body").css('cursor', '');
+
+                            clearTimeout(idleMouseTimer);
+
+                            idleMouseTimer = setTimeout(function() {
+                                    $("body").css('cursor', 'none');
+
+                                    forceMouseHide = true;
+                                    setTimeout(function() {
+                                            forceMouseHide = false;
+                                    }, 200);
+                            }, 1000);
+                    }
+            });
+        });
+
+
+        function firstRun(){
+            $.getJSON('set_time', {
+                time: $("#casovac").text(),
+                endtime: $("#casovac").attr("class"),
+            });
+            return false;
+        }
+
+        firstRun();
+
+        var timer = setInterval(function(){
+            $.getJSON('set_time', {
+                time: $("#casovac").text(),
+                endtime: $("#casovac").attr("class"),
+            }, function(data) {
+                if (document.getElementById('casovac').innerHTML == "20:00"){
+                    $.getJSON('set_time', {
+                        time: "20:00",
+                        endtime: $("#casovac").attr("class"),
+                    });
+                    clearInterval(timer);
+                }
+            });
+            return false;
+        }, 2000);
+
+
+        function addScore(event) {
+            $.getJSON('update_score', {
+                score_key: event.key,
+            }, function(data) {
+                if (data.team_scored == 1){
+                    document.getElementById("score_1").innerHTML = data.json
+                }
+                else if (data.team_scored == 2){
+                    document.getElementById("score_2").innerHTML = data.json
+                }
+            });
+            return false;
+        }
+    </script>
+</head>
+<body onkeypress="addScore(event)">
+
+    {% if match.order < 800 %}
+        <div id="time">
+            <h1 id="casovac"></h1>
+        </div>
+
+        <div id="names">
+            <div>
+                <span>{{ match.Home.name }}</span>
+            </div>
+            <div>
+                <span>{{ match.Away.name }}</span>
+            </div>
+        </div>
+
+
+        <br />
+
+
+        <div id="score">
+            <div>
+                <span id="score_1">{{ match.score.split(":")[0] }}</span>
+            </div>
+            <div>
+                <span>:</span>
+            </div>
+            <div>
+                <span id="score_2">{{ match.score.split(":")[1] }}</span>
+            </div>
+        </div>
+
+
+        <br />
+
+        <div id="buttons">
+            <button onclick="pauseTimer()" id="pauza">Pozastavit</button>
+            <button onclick="newMatch()" id="disabled-button" disabled>Nový zápas</button>
+        </div>
+    {% else %}
+        <h1 style="text-align: center; font-size: 100px; margin-top: 10%;">GGWP</h1>
+        <h1 style="text-align: center; font-size: 100px; margin-top: 5%;">Pro Patrmana <3</h1>
+    {% endif %}
+
+
+    <script>
+         //Proměnná, která určuje, jestli je pauza
+         var pause = false;
+
+         //Promptne se, pokud začal nový zápas
+         if ({{ endtime }} == 0){
+
+            //Když začne nový zápas, nastaví čas na "0:00" a zastaví jej
+            var once = true;
+
+            pauza = document.getElementById("pauza");
+            pauza.innerHTML = 'Spustit';
+
+            //Určuje, jestli je začátek zápasu, u uživatele zobrazí čas začátku zápasu
+            $.getJSON('start', {
+                start: 1,
+                polocas: 0,
+            });
+         }
+         else{
+            var once = false;
+         }
+
+
+
+         function pauseTimer() {
+             if (pauza.innerHTML == 'Spustit'){
+                $.getJSON('start', {
+                start: 2,
+                polocas: 0,
+                }, function(data) {
+                });
+             }
+
+             pauza.innerHTML = 'Pozastavit';
+
+             pause = !pause;
+         }
+
+
+         //Smaže starý časovač
+         function newMatch(){
+            $.getJSON('new_match', {
+                score_home: $("#score_1").text(),
+                score_away: $("#score_2").text()
+            }, function(data) {
+                setTimeout(location.reload.bind(location), 300);
+                setTimeout(location.reload.bind(location), 300);
+            });
+            return false;
+         }
+
+
+
+         function countdown( elementName, minutes, seconds )
+             {
+                 var element, endTime, hours, mins, msLeft, time;
+                 var polocas = true;
+
+                 function twoDigits( n )
+                 {
+                     return (n <= 9 ? "0" + n : n);
+                 }
+
+                 function updateTimer()
+                 {
+                     if ((element.innerHTML == "10:00" || element.innerHTML == "10:01" || element.innerHTML == "10:02") && polocas == true){
+                        pauza.innerHTML = 'Spustit';
+                        pause = true;
+                        polocas = false;
+                        $.getJSON('start', {
+                            start: 0,
+                            polocas: 1,
+                        });
+                     }
+
+                     if (!pause){
+                         msLeft = endTime - (+new Date);
+                         if ( msLeft < 1000 ) {
+                             element.innerHTML = minutes.toString() + ":00";
+                         } else {
+                             time = new Date( msLeft );
+                             hours = time.getUTCHours();
+                             mins = time.getUTCMinutes();
+                             if (once == true){
+                                element.innerHTML = "0:00"
+                             }else{
+                                element.innerHTML = (hours ? hours + ':' + twoDigits( (minutes-1) - mins ) : (minutes-1) - mins) + ':' + twoDigits( 59 - time.getUTCSeconds() );
+                             }
+                         }
+                         if (once == true){
+                            once = false;
+                            pause = true;
+                         }
+                     }else{
+                         endTime = (+new Date) + 1000 * (60*mins + time.getUTCSeconds()) + 500;
+                         element.className = '';
+                         element.classList.add(endTime);
+                     }
+                     var stop = false;
+                     if (element.innerHTML == "20:00"){
+                        setTimeout(disabledFalse, 4000)
+                        var stop = true;
+
+                        clearTimeout(timer);
+                     }
+
+                     if (stop == false){
+                     var timer = setTimeout( updateTimer, time.getUTCMilliseconds() + 500 );
+                     }
+                 }
+
+                 element = document.getElementById( elementName );
+                 {% if endtime != 0 %}
+                    endTime = {{ endtime }};
+                 {% else %}
+                    endTime = (+new Date) + 1000 * (60*minutes + seconds) + 500;
+                 {% endif %}
+                 element.classList.add(endTime);
+                 updateTimer();
+             }
+         function disabledFalse(){
+            document.getElementById('disabled-button').disabled = false;
+         }
+
+         countdown("casovac", 20, 0 );
+     </script>
+</body>
+</html>

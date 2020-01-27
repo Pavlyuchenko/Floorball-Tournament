@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="cs-cz">
+<head>
+    <meta charset="UTF-8">
+    <title>Vánoční Florbalový Turnaj - Hlavní stránka</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=css + '.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='Logo.png') }}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        function firstRun(){
+            $.getJSON('get_time', {
+            }, function(data) {
+                console.log(data.lenght);
+                if (data.length == 1){
+                    document.getElementById("time").style.left = "-50px";
+                }
+                else if (data.length == 2){
+                    document.getElementById("time").style.left = "-70px";
+                }
+                else if (data.length == 7){
+                    document.getElementById("time").style.left = "-200px";
+                }
+                else if (data.length == 5){
+                    document.getElementById("time").style.left = "-140px";
+                }
+                else if (data.length == 4){
+                    document.getElementById("time").style.left = "-110px";
+                }
+                $('#time').text(data.time + "'");
+            });
+            return false;
+        }
+
+        firstRun();
+
+        setInterval(function(){
+            $.getJSON('get_time', {
+            }, function(data) {
+                    if (data.length == 1){
+                        document.getElementById("time").style.left = "-50px";
+                    }
+                    else if (data.length == 2){
+                        document.getElementById("time").style.left = "-70px";
+                    }
+                    else if (data.length == 7){
+                        document.getElementById("time").style.left = "-200px";
+                    }
+                    else if (data.length == 5){
+                        document.getElementById("time").style.left = "-140px";
+                    }
+                    else if (data.length == 4){
+                        document.getElementById("time").style.left = "-110px";
+                    }
+                    $('#time').text(data.time);
+                    document.getElementById("left-name").innerHTML = data.home_team;
+                    document.getElementById("right-name").innerHTML = data.away_team;
+            });
+            return false;
+        }, 7000);
+
+
+        setInterval(function(){
+            $.getJSON('get_score', {
+            }, function(data) {
+                document.getElementById("home-score").innerHTML = data.home;
+                document.getElementById("away-score").innerHTML = data.away;
+
+
+            });
+            return false;
+        }, 7000);
+
+
+        setInterval(function(){
+            var text = document.getElementById("time").textContent;
+
+            if (text.slice(text.length - 1) != "'"){
+                document.getElementById("time").innerHTML = text + "'";
+            }
+            else{
+                document.getElementById("time").innerHTML = text.slice(0, -1);
+            }
+        }, 800);
+
+        setTimeout(location.reload.bind(location), 21000);
+
+
+    </script>
+</head>
+<body>
+    <div id="red">
+        <nav>
+            <h2>Vánoční florbalový turnaj</h2>
+        </nav>
+
+        {% if timer.polocas != 1 %}
+            <h1 id="h1-white">Právě se hraje</h1>
+            <h3>Skupina {{ match.Home.Group.name }}</h3>
+
+
+            <div id="playing">
+                <div id="playing-score">
+                    <span id="time">0'</span>
+                    <span id="left-name">{{ match.Home.name }}</span>
+                    <div id="playing-result">
+                        <span class="purple" id="home-score">{{ match.score.split(':')[0] }}</span>
+                        <span id="hyphen">-</span>
+                        <span class="purple" id="away-score">{{ match.score.split(':')[1] }}</span>
+                    </div>
+                    <span id="right-name">{{ match.Away.name }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if timer.polocas == 1 %}
+            <h1 id="h1-white">Rozpis</h1>
+        {% else %}
+            <h1 id="h1-white">Následující zápasy</h1>
+        {% endif %}
+        {% if matches %}
+        <div class="next">
+            {% set start = [] %}
+            {% for match in matches %}
+                {% if a > 0 and not start %}
+                    {% if start.append(True) %} {% endif %}
+                    <h4>Skupina A</h4>
+                {% elif b > 0 and not start %}
+                    {% if start.append(True) %} {% endif %}
+                    <h4>Skupina B</h4>
+                {% elif c > 0 and not start %}
+                    {% if start.append(True) %} {% endif %}
+                    <h4>Skupina C</h4>
+                {% elif d > 0 and not start %}
+                    {% if start.append(True) %} {% endif %}
+                    <h4>Skupina D</h4>
+                {% elif a + 1 == loop.index %}
+                    <h4>Skupina B</h4>
+                {% elif a + b + 1 == loop.index %}
+                    <h4>Skupina C</h4>
+                {% elif a + b + c + 1 == loop.index %}
+                    <h4>Skupina D</h4>
+                {% endif %}
+                {% if loop.index == 1 and timer.polocas == 1 %}
+                    <div class="next-score">
+                        <span class="next-time">{{ match.start }}</span>
+                        <span class="next-left-name">{{ match.Home.name }}</span>
+                        <span class="v">v</span>
+                        <span class="next-right-name">{{ match.Away.name }}</span>
+                    </div>
+
+                    <br />
+                {% elif loop.index != 1%}
+                    <div class="next-score">
+                        <span class="next-time">{{ match.start }}</span>
+                        <span class="next-left-name">{{ match.Home.name }}</span>
+                        <span class="v">v</span>
+                        <span class="next-right-name">{{ match.Away.name }}</span>
+                    </div>
+
+                    <br />
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+            <h1>Nejsou naplánované žádné zápasy, pracuje se na pavouku.</h1>
+        {% endif %}
+    </div>
+    <div id="tables">
+        <h1>Průběžné tabulky</h1>
+
+        {% for group in groups %}
+            <h3>Skupina {{ group.name }}</h3>
+            <table>
+                <tr>
+                    <th>Pořadí</th>
+                    <th class="team-name">Název</th>
+                    <th>Odeh.</th>
+                    <th>Výh.</th>
+                    <th>Rem.</th>
+                    <th>Proh.</th>
+                    <th>G. Vst.</th>
+                    <th>G. Obd.</th>
+                    <th>G. Roz</th>
+                    <th>Body</th>
+                </tr>
+                {% for team in teams %}
+                    {% if team.Group.name == group.name %}
+                        {% if loop.index0 % 4 + 1 == 1 or loop.index0 % 4 + 1 == 2 %}
+                            <tr class="first-two">
+                                <td>{{ loop.index % 4 }}</td>
+                                <td class="team-name">{{ team.name }}</td>
+                                <td>{{ team.played_matches }}</td>
+                                <td>{{ team.wins }}</td>
+                                <td>{{ team.draws }}</td>
+                                <td>{{ team.loses }}</td>
+                                <td>{{ team.goals_shot }}</td>
+                                <td>{{ team.goals_got }}</td>
+                                <td>{{ team.goals_shot - team.goals_got }}</td>
+                                <td>{{ team.points }}</td>
+                            </tr>
+                        {% else %}
+                            <tr class="second-two">
+                                <td>{{ loop.index0 % 4 + 1  }}</td>
+                                <td class="team-name">{{ team.name }}</td>
+                                <td>{{ team.played_matches }}</td>
+                                <td>{{ team.wins }}</td>
+                                <td>{{ team.draws }}</td>
+                                <td>{{ team.loses }}</td>
+                                <td>{{ team.goals_shot }}</td>
+                                <td>{{ team.goals_got }}</td>
+                                <td>{{ team.goals_shot - team.goals_got }}</td>
+                                <td>{{ team.points }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </table>
+
+            {% if played_matches %}
+                <h3>Odehrané zápasy</h3>
+            {% endif %}
+            <div class="played">
+                {% for played_match in played_matches %}
+                    {% if played_match.Group.name == group.name %}
+                        <div class="played-score">
+                            <span class="played-time">{{ played_match.start }}</span>
+                            <span class="played-left-name">{{ played_match.Home.name }}</span>
+                            <div class="played-result">
+                                <span class="played-home-score">{{ played_match.score.split(":")[0] }}</span>
+                                <span class="played-hyphen">-</span>
+                                <span class="played-away-score">{{ played_match.score.split(":")[1] }}</span>
+                            </div>
+                            <span class="played-right-name">{{ played_match.Away.name }}</span>
+                        </div>
+
+                        <br />
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
