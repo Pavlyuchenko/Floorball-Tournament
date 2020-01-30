@@ -139,7 +139,7 @@ def home():
     matches_c = Match.query.join(Group).filter(Group.name == "C").count()
     matches_d = Match.query.join(Group).filter(Group.name == "D").count()
 
-    try:
+    '''try:
         quarterfinal = Match.query.filter(Match.quarterfinal != 0).order_by(Match.quarterfinal).all()
     except:
         try:
@@ -200,9 +200,9 @@ def home():
         try:
             real_third = PlayedMatch.query.filter(PlayedMatch.real_third != 0).order_by(PlayedMatch.real_third).all()
         except:
-            real_third = 0
+            real_third = 0'''
 
-    return render_template('hlavni_stranka_pavouk.html', match=match, css="hlavni_stranka", matches=matches, groups=groups, teams=teams_by_points, timer=timer, played_matches=played_matches, a=matches_a, b=matches_b, c=matches_c, d=matches_d, quarterfinal=quarterfinal, semifinal=semifinal, third=third, final=final, l_quarterfinal=l_quarterfinal, l_semifinal=l_semifinal, l_final=l_final, real_third=real_third, real_final=real_final)
+    return render_template('hlavni_stranka.html', match=match, css="hlavni_stranka", matches=matches, groups=groups, teams=teams_by_points, timer=timer, played_matches=played_matches, a=matches_a, b=matches_b, c=matches_c, d=matches_d) # quarterfinal=quarterfinal, semifinal=semifinal, third=third, final=final, l_quarterfinal=l_quarterfinal, l_semifinal=l_semifinal, l_final=l_final, real_third=real_third, real_final=real_final'''
 
 
 @app.route('/home_admin')
