@@ -1,4 +1,5 @@
 # [Floorball Tournament](http://vanocniflorbalovyturnaj.pythonanywhere.com/)
+### Second version of this project can be found [**here**](https://github.com/Pavlyuchenko/VanocniFlorbalovyTurnaj2.0)
 
 This project was created for my high school's floorball (sport similar to hockey) tournament. There is a simple timer with score for admin. The score and result is sent every 2 seconds to database, so that it can be viewed live on other devices. There are also groups implemented and all the matches are automatically generated based on the previous results.
 
